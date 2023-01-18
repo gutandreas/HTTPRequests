@@ -1,25 +1,43 @@
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="functions.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-<h1>HTTP-Requests</h1>
-<input type="radio" id="radioget" name="fav_language" value="GET" checked=true onclick=enableBody(false)>
-<label for="radioget">GET</label><br>
-<input type="radio" id="radiopost" name="fav_language" value="POST" onclick="enableBody(true)">
-<label for="radiopost">POST</label><br>
-<input type="button" value="Request versenden" onclick="sendRequest()">
-<br>
-<label>Body (JSON):</label>
-<br>
-<textarea id="requestbody" disabled="true"></textarea>
-<br>
-<label>Antwort des Servers:</label>
-<br>
-<textarea id="answer"></textarea>
+<div class="form">
+    <div class="title">HTTP-Requests</div>
+    <div class="subtitle">Versende GET- und POST-Requests an deinen Server</div>
+    <div class="input-container ic1">
+        <input type="radio" id="radioget" name="fav_language" value="GET" checked=true onclick=enableBody(false)>
+        <div class="cut"></div>
+        <label for="radioget">GET</label><br>
+        <input type="radio" id="radiopost" name="fav_language" value="POST" onclick="enableBody(true)">
+        <label for="radiopost">POST</label><br>
+        <div class="cut"></div>
+    </div>
+    <div class="input-container ic2">
+        <label>Body (JSON):</label>
+        <textarea id="requestbody" disabled="true" rows="5"></textarea>
+        <div class="cut cut-short"></div>
+    </div>
+
+    <div class="input-container ic2">
+        <label>Serverantwort:</label>
+        <textarea id="answer" style="width: 100%" rows="12"></textarea>
+        <div class="cut cut-short"></div>
+    </div>
+    <input type="button" class="submit" value="Request versenden" onclick="sendRequest()">
+
+</div>
+
+
 
 </body>
 </html>
