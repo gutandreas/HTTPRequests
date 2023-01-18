@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="functions.js"></script>
+</head>
+<body>
+<h1>HTTP-Requests</h1>
+<input type="radio" id="radioget" name="fav_language" value="GET" checked=true onclick=enableBody(false)>
+<label for="radioget">GET</label><br>
+<input type="radio" id="radiopost" name="fav_language" value="POST" onclick="enableBody(true)">
+<label for="radiopost">POST</label><br>
+<input type="button" value="Request versenden" onclick="sendRequest()">
+<br>
+<label>Body (JSON):</label>
+<br>
+<textarea id="requestbody" disabled="true"></textarea>
+<br>
+<label>Antwort des Servers:</label>
+<br>
+<textarea id="answer"></textarea>
+
+</body>
+</html>
