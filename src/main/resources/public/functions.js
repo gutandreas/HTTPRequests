@@ -33,10 +33,14 @@ function sendGetRequest(){
 }
 
 function sendPostRequest(){
-    console.log(document.getElementById("requestbody").value)
+    let bodyText = document.getElementById("requestbody").value
+    if (bodyText.length == 0){
+        bodyText = "Kein Inhalt"
+    }
+    console.log(bodyText)
     fetch("/post", {
         method: 'POST',
-        body: document.getElementById("requestbody").value,
+        body: bodyText,
         headers: {
             "Content-type": "application/json"
         }
