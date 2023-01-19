@@ -13,6 +13,8 @@ public class Controller {
     @GetMapping(value="/get")
     public ResponseEntity<String> serveGetRequest(){
 
+        System.out.println("GET-Request eingetroffen");
+
         //TODO: Serverreaktion programmieren:
         String answer = "Standardantwort GET";
 
