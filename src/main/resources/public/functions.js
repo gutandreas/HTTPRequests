@@ -21,7 +21,6 @@ function sendRequest(){
 }
 
 function sendGetRequest(){
-    console.log(document.getElementById("requestbody").value)
     fetch("/get", {
         method: 'GET'
     })
