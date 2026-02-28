@@ -20,8 +20,23 @@ jobs:
       - name: Gradle Build
         run: ./gradlew build -x test
 
-      - name: App starten
-        run: java -jar build/libs/*SNAPSHOT.jar
+      - name: App im Hintergrund starten
+        run: |
+          java -jar build/libs/*SNAPSHOT.jar &
+          echo $! > app.pid
+
+      - name: Warten bis App läuft
+        run: |
+          for i in {1..20}; do
+            if curl -s http://localhost:8080/actuator/health | grep UP; then
+              echo "App läuft!"
+              exit 0
+            fi
+            echo "Warte auf Start..."
+            sleep 3
+          done
+          echo "App ist nicht gestartet"
+          exit 1
 
       - name: Test Request
-        run: curl http://localhost:8080/get
+        run: curl http://localhost:8080/dein-endpoint
