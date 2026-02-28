@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Repository auschecken
+      # 1️⃣ Repository auschecken (für GitHub Actions Runner, optional)
       - uses: actions/checkout@v4
 
       # 2️⃣ SSH Key einrichten
@@ -21,11 +21,14 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      # 3️⃣ Deployment auf dem Server
+      # 3️⃣ Deployment auf Server
       - name: Deploy to Server
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            # Deployment-Verzeichnis
             mkdir -p ~/spring-app && cd ~/spring-app
+
+            # Git aktualisieren oder klonen
             if [ -d .git ]; then
               git reset --hard
               git pull origin main
@@ -33,13 +36,13 @@ jobs:
               git clone https://github.com/${{ github.repository }} .
             fi
 
-            # 1️⃣ Spring Boot JAR bauen
+            # Spring Boot JAR bauen
             ./gradlew clean bootJar
 
-            # 2️⃣ Docker Image bauen
+            # Docker Image bauen
             docker build -t spring-app:latest .
 
-            # 3️⃣ Container stoppen, löschen und neu starten
+            # Container stoppen, löschen und neu starten
             docker stop spring-app || true
             docker rm spring-app || true
             docker run -d --name spring-app -p 80:8080 --restart unless-stopped spring-app:latest
