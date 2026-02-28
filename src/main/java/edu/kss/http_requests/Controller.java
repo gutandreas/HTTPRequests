@@ -16,6 +16,7 @@ public class Controller {
         System.out.println("GET-Request eingetroffen");
 
         //TODO: Serverreaktion programmieren:
+        //Neue Notiz
         String answer = "Standardantwort GET";
 
 
