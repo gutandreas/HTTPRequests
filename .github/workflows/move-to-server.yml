@@ -29,3 +29,20 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t ghcr.io/${{ github.actor }}/mein-app:latest .
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+            host: ${{ secrets.SSH_HOST }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            username: ${{ secrets.SSH_USER }}
+            script: |
+              echo "Pulling latest Docker image..."
+              docker pull ghcr.io/${{ github.actor }}/mein-app:latest
+              
+              echo "Stopping old container..."
+              docker stop mein-app || true
+              docker rm mein-app || true
+              
+              echo "Starting new container..."
+              docker run -d --name mein-app -p 8080:8080 ghcr.io/${{ github.actor }}/mein-app:latest
