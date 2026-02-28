@@ -3,35 +3,17 @@ name: Build & Deploy Spring Boot App with Docker
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch:  # Damit manuell startbar
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       # 1️⃣ Repository auschecken
       - uses: actions/checkout@v4
 
-      # 2️⃣ Java einrichten
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      # 3️⃣ Spring Boot JAR bauen
-      - name: Build Boot Jar
-        run: ./gradlew clean bootJar
-
-
-      # 5️⃣ Docker Image bauen
-      - name: Build Docker Image
-        run: docker build -t spring-app:latest .
-
-      # 6️⃣ SSH Key einrichten
+      # 2️⃣ SSH Key einrichten
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -39,16 +21,25 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      # 7️⃣ Docker auf Server deployen
+      # 3️⃣ Deployment auf dem Server
       - name: Deploy to Server
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-            docker stop spring-app || true &&
-            docker rm spring-app || true &&
-            docker pull spring-app:latest || true &&
-            docker run -d \
-              --name spring-app \
-              -p 80:8080 \
-              --restart unless-stopped \
-              spring-app:latest
+            # Verzeichnis für Deployment
+            mkdir -p ~/spring-app && cd ~/spring-app
+            # Repo aktualisieren oder klonen
+            if [ -d .git ]; then
+              git reset --hard
+              git pull origin main
+            else
+              git clone https://github.com/${{ github.repository }} .
+            fi
+            # Spring Boot App bauen
+            ./gradlew clean bootJar
+            # Docker Image bauen
+            docker build -t spring-app:latest .
+            # Container stoppen, löschen und neu starten
+            docker stop spring-app || true
+            docker rm spring-app || true
+            docker run -d --name spring-app -p 80:8080 --restart unless-stopped spring-app:latest
           "
