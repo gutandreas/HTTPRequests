@@ -22,3 +22,6 @@ jobs:
 
       - name: App starten
         run: java -jar build/libs/*SNAPSHOT.jar
+
+      - name: Test Request
+        run: curl http://localhost:8080/get
