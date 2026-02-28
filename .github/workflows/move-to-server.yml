@@ -28,4 +28,6 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.actor }}/mein-app:latest .
+        run: |
+          docker build -t ghcr.io/${{ github.actor }}/mein-app:latest .
+          docker push ghcr.io/${{ github.actor }}/mein-app:latest
