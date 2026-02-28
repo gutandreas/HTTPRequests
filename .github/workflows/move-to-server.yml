@@ -3,6 +3,7 @@ name: Build & Deploy Spring Boot App with Docker
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
