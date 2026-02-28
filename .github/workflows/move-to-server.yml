@@ -25,20 +25,21 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-            # Verzeichnis für Deployment
             mkdir -p ~/spring-app && cd ~/spring-app
-            # Repo aktualisieren oder klonen
             if [ -d .git ]; then
               git reset --hard
               git pull origin main
             else
               git clone https://github.com/${{ github.repository }} .
             fi
-            # Spring Boot App bauen
+
+            # 1️⃣ Spring Boot JAR bauen
             ./gradlew clean bootJar
-            # Docker Image bauen
+
+            # 2️⃣ Docker Image bauen
             docker build -t spring-app:latest .
-            # Container stoppen, löschen und neu starten
+
+            # 3️⃣ Container stoppen, löschen und neu starten
             docker stop spring-app || true
             docker rm spring-app || true
             docker run -d --name spring-app -p 80:8080 --restart unless-stopped spring-app:latest
