@@ -9,37 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Repo auschecken
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # 2. Docker Login zu GHCR
-      - name: Login to GitHub Container Registry
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'  # je nach Projekt
+
+      - name: Build JAR
+        run: ./gradlew clean build
+
+      - name: Login to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # 3. Docker Image bauen
-      - name: Build Docker Image
-        run: |
-          docker build -t ghcr.io/${{ github.actor }}/mein-app:latest .
-
-      # 4. Docker Image pushen
-      - name: Push Docker Image
-        run: |
-          docker push ghcr.io/${{ github.actor }}/mein-app:latest
-
-      # 5. Server per SSH updaten
-      - name: Deploy on Server
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker pull ghcr.io/${{ github.actor }}/mein-app:latest
-            docker stop mein-app || true
-            docker rm mein-app || true
-            docker run -d --name mein-app ghcr.io/${{ github.actor }}/mein-app:latest
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.actor }}/mein-app:latest .
