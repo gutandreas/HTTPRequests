@@ -1,42 +1,60 @@
-name: Run Spring Boot App
+name: Build & Deploy Spring Boot App with Docker
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
-  run-app:
+  deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
+      # 1️⃣ Repository auschecken
       - uses: actions/checkout@v4
 
+      # 2️⃣ Java einrichten
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Gradle Build
-        run: ./gradlew build -x test
+      # 3️⃣ Spring Boot JAR bauen
+      - name: Build Boot Jar
+        run: ./gradlew clean bootJar
 
-      - name: App im Hintergrund starten
+      # 4️⃣ Optional: Docker Registry Login (GHCR/Docker Hub)
+      - name: Login to Docker Registry
+        if: secrets.DOCKER_USERNAME != ''
         run: |
-          java -jar build/libs/*SNAPSHOT.jar &
-          echo $! > app.pid
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY }} \
+          -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
-      - name: Warten bis App läuft
+      # 5️⃣ Docker Image bauen
+      - name: Build Docker Image
         run: |
-          for i in {1..20}; do
-            if curl -s http://localhost:8080/actuator/health | grep UP; then
-              echo "App läuft!"
-              exit 0
-            fi
-            echo "Warte auf Start..."
-            sleep 3
-          done
-          echo "App ist nicht gestartet"
-          exit 1
+          docker build -t spring-app:latest .
 
-      - name: Test Request
-        run: curl http://localhost:8080/dein-endpoint
+      # 6️⃣ SSH Key einrichten
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      # 7️⃣ Docker auf Server deployen
+      - name: Deploy to Server
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            docker stop spring-app || true &&
+            docker rm spring-app || true &&
+            docker pull spring-app:latest || true &&
+            docker run -d \
+              --name spring-app \
+              -p 80:8080 \
+              --restart unless-stopped \
+              spring-app:latest
+          "
